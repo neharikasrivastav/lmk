@@ -1,0 +1,22 @@
+# Lmk roadmap
+- [x] Restore remix initial schema with private access policies, 100 incidents, 32 stops, 3 contacts and 2 routes; counts verified in database
+- [x] Handle unavailable or empty demo content with live-routing fallback and friendly recovery; malformed routes filtered, tests passed
+- [x] Verify Salesforce Park walk through alert, stop check-in, onward demo arrival and local viewer; no browser errors, 54 tests passed
+- [x] Reset copied migration history for the remixed project without changing database data
+- [x] Replace ORS_API_KEY: new value saved through the secure form
+- [x] Companion: current-position nearest-three context and full ephemeral history; added 20 citywide real-name demo listings; verified live 1215 Divisadero following-me answer names The Mill with exactly three actions, successful stop routing and arrival check-in reads back in shared viewer; 48 tests passed
+- [x] Fix fractional-duration trip validation, start locally before optional sharing, retry links; verified real viewer arrival plus forced network-failure recovery
+- [x] Restore seeded calmer scores, time-correct labels, default calmer selection and reasons; added 60 citywide demo incidents
+- [x] Restrict demo dots to selected-route 100m corridor and max 8; optional official layer; restored any-route 40% demo alert with elapsed-time animation
+- [x] Implement route-nearby seeded stops and Overpass cafes/restaurants/hotels, hours parsing and recoverable retry state; mocked provider success tested
+- [ ] Verify live Overpass business results: public service rejects requests with HTTP 406 or times out from this environment; graceful failure and retry verified
+- [x] Address first-number/neighborhood labels and deduplication using autocomplete-compliant Photon; verified Salesforce Park and 800 Irving Street complete alert → stop → arrival → viewer flows; 44 tests passed
+- [x] Broaden address lookup using Photon with location bias, exact-number labels, debounced autocomplete and missing-address/error states; verified SF and Berkeley addresses, approximate named crossings, missing-number fallback and route selection; 29 tests passed
+- [x] Replace illustrative incidents with openly licensed SFPD DataSF reports; show each report’s source and upstream update time, separate retrieval time, reporting-delay notices; verify real feed, individual map report, mobile/desktop displays and 22 tests
+- [x] Expanded uploaded brief: key-free seeded Powell St BART → Salesforce Park demo, updated branding, draggable sheet, route scoring, 60-second walk and 40% alert
+- [x] Step 1: map, live location, search, walking routes + alternatives
+- [x] Step 2: incidents table + seed, dots, route scoring, recommendation line
+- [x] Step 3: trip sharing, /t/:share_token realtime viewer, auto-end + manual end
+- [x] Step 4: seeded verified stops, late-night ordering, stop detours and check-ins (no Places key required for demo)
+- [x] Step 5: companion chat, notify-contact SMS handoff, Call 911, demo trusted contacts
+- [x] Step 6: /partners page + partner_requests form

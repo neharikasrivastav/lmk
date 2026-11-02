@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793596861139,
+      "tag": "0000_initial_lmk_remix_demo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793602091604,
+      "tag": "0001_restrict_demo_contacts_routes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793602206914,
+      "tag": "0002_retire_shared_contacts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793602240012,
+      "tag": "0003_tighten_public_grants",
+      "breakpoints": true
+    }
+  ]
+}
