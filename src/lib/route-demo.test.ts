@@ -10,7 +10,7 @@ describe("seeded route rules", () => {
     expect(rank.routes.map((r)=>r.id)).toEqual([9,2]);
     expect(rank.calmerId).toBe(2);
     expect(calmScore(fastest,[incident])).toBe(80);
-    expect(calmerReason([fastest,calmer],[incident])).toBe("Calmer route, +3 min. Avoids 1 recent reports of aggressive behavior on Market St.");
+    expect(calmerReason([fastest,calmer],[incident])).toBe("Calmer route, +3 min. 1 fewer report in the last hour: aggressive behavior on Market St.");
   });
   it("computes nonnegative displayed-time differences relative to fastest", () => {
     expect(extraMinutes(1080,900)).toBe(3);
@@ -39,5 +39,11 @@ describe("seeded route rules", () => {
   it("filters stops within 300 metres", () => {
     const stop: Stop={id:"s",name:"Cafe",lat:37.785,lng:-122.4,address:"",note:"",verified:true,closes_at:23,specialty:"Coffee"};
     expect(nearbyRouteStops(fastest,[stop,{...stop,id:"far",lng:-122.41}]).map(s=>s.id)).toEqual(["s"]);
+  });
+});describe("calmerReason counts", () => {
+  it("matches the card counts and names the most common avoided report", () => {
+    const at = (id: string, lat: number, type: string, street: string): Incident => ({ ...incident, id, lat, type, street });
+    const reports = [at("a", 37.781, "aggressive behavior", "Market St"), at("b", 37.783, "aggressive behavior", "Market St"), at("c", 37.785, "poor lighting", "5th St")];
+    expect(calmerReason([fastest, calmer], reports)).toBe("Calmer route, +3 min. 3 fewer reports in the last hour, mostly aggressive behavior on Market St.");
   });
 });

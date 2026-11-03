@@ -20,12 +20,20 @@ export function calmerReason(routes: DemoRoute[], incidents: Incident[]) {
   const rank = rankedRoutes(routes, incidents);
   const calmer = routes.find((r) => r.id === rank.calmerId);
   if (!calmer || !rank.fastest) return "Stays on well-traveled streets.";
-  const avoided = routeReports(rank.fastest, incidents).filter((i) => !routeReports(calmer, incidents).some((other) => other.id === i.id));
-  const example = [...avoided].sort((a, b) => b.severity - a.severity)[0];
+  const fastestReports = routeReports(rank.fastest, incidents);
+  const calmerReports = routeReports(calmer, incidents);
+  // Match the counts shown on the route cards: fastest minus calmer.
+  const fewer = fastestReports.length - calmerReports.length;
+  const avoided = fastestReports.filter((i) => !calmerReports.some((other) => other.id === i.id));
+  const groups = new Map<string, Incident[]>();
+  for (const i of avoided) groups.set(`${i.type}|${i.street}`, [...(groups.get(`${i.type}|${i.street}`) ?? []), i]);
+  const top = [...groups.values()].sort((a, b) => b.length - a.length || (b[0]?.severity ?? 0) - (a[0]?.severity ?? 0))[0]?.[0];
   const extra = extraMinutes(calmer.durationS, rank.fastest.durationS);
-  if (example) {
-    const count = avoided.filter((i) => i.type === example.type && i.street === example.street).length;
-    return `Calmer route, +${extra} min. Avoids ${count} recent reports of ${example.type} on ${example.street || "the faster route"}.`;
+  if (fewer > 0 && top) {
+    const where = `${top.type} on ${top.street || "the faster route"}`;
+    return fewer === 1
+      ? `Calmer route, +${extra} min. 1 fewer report in the last hour: ${where}.`
+      : `Calmer route, +${extra} min. ${fewer} fewer reports in the last hour, mostly ${where}.`;
   }
   return `Calmer route, +${extra} min. ${typeof calmer.busyIntersections === "number" && typeof rank.fastest.busyIntersections === "number" && calmer.busyIntersections < rank.fastest.busyIntersections ? "Passes fewer busy intersections." : "Stays on well-traveled streets."}`;
 }
