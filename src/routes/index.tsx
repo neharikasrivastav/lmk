@@ -43,7 +43,8 @@ import {
   PARK,
   DEMO_SECONDS,
   ALERT_PROGRESS,
-  calmScore,
+  routeReports,
+  reportsLabel,
   remainingRoute,
   routePosition,
   sortedStops,
@@ -697,7 +698,7 @@ function Home() {
                       </span>
                     </span>
                   </span>
-                  <span className="shrink-0 text-right"><span className="block font-semibold">{calmScore(r, data.incidents)}</span><span className="text-xs text-muted-foreground">calm score</span></span>
+                  <span className="shrink-0 text-right"><span className="block font-semibold">{reportsLabel(routeReports(r, data.incidents).length)}</span><span className="text-xs text-muted-foreground">along route · last hour</span></span>
                 </Button>
               ))}
               <p className="mb-4 flex items-start gap-2 text-sm text-muted-foreground"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-calm" />{routeReason}</p>
@@ -716,7 +717,7 @@ function Home() {
                 <ArrowUpRight />
               </Button>
               <p className="mt-3 text-center text-xs text-muted-foreground">
-                Seeded demo reports · scores are illustrative, not guarantees
+                Seeded demo reports · illustrative, not a guarantee of safety
               </p>
             </>
           )}

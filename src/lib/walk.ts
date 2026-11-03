@@ -79,6 +79,10 @@ export function calmScore(route: WalkRoute, incidents: Incident[]) {
     ),
   );
 }
+// Route cards show plain report counts; calmScore stays internal for ranking.
+export function reportsLabel(count: number) {
+  return count === 0 ? "No reports" : count === 1 ? "1 report" : `${count} reports`;
+}
 export function routePosition(route: WalkRoute, progress: number): Coord {
   const line = lineString(route.coordinates);
   const coords = along(line, length(line) * Math.max(0, Math.min(1, progress))).geometry

@@ -11,6 +11,7 @@ import {
   hasArrived,
   routeReports,
   sortedStops,
+  reportsLabel,
 } from "./walk";
 import type { Incident, Stop } from "./walk";
 describe("walk rules", () => {
@@ -77,5 +78,12 @@ describe("walk rules", () => {
       "late",
       "early",
     ]);
+  });
+});
+describe("reportsLabel", () => {
+  it("shows plain counts instead of a score", () => {
+    expect(reportsLabel(0)).toBe("No reports");
+    expect(reportsLabel(1)).toBe("1 report");
+    expect(reportsLabel(2)).toBe("2 reports");
   });
 });
