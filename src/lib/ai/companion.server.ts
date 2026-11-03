@@ -5,7 +5,7 @@ import { generateText, type ModelMessage } from "ai";
 // (Gemini, Groq, OpenRouter) works by changing AI_BASE_URL and AI_MODEL.
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai";
 // A non-thinking "lite" model keeps distress replies to about a second.
-const DEFAULT_MODEL = "gemini-2.5-flash-lite";
+const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
 export function companionConfig() {
   const apiKey = process.env["AI_API_KEY"] ?? process.env["GEMINI_API_KEY"];
