@@ -1,4 +1,4 @@
-import { stopGuidance, type CompanionStop } from './companion-stops';
+import { DISTRESS, stopGuidance, type CompanionStop } from './companion-stops';
 
 // Actions the companion can propose. They render as buttons; nothing is sent,
 // shared or dialed until the walker taps one.
@@ -13,7 +13,6 @@ export const ACTION_TYPES = ['go_to_stop', 'reroute', 'share_walk', 'alert_conta
 
 export type WalkState = { active: boolean; sharing: boolean; canReroute: boolean };
 
-const DISTRESS = /unsafe|follow(?:ing|ed|s)?|scared|afraid|threat|danger|harass|help me|stalk/i;
 const SAFE_CLAIM = /\b(?:(?:it|this|that|the area|the block|the street|the route|this block|this area|this route|here)\s+(?:is|'s|’s|looks|seems|feels)\s+(?:totally |completely |perfectly |very |quite )?safe\b|you(?:'re| are|’re)\s+(?:totally |completely |perfectly )?safe\b|safe (?:area|neighbou?rhood|street|block|route)\b)/i;
 
 export function isDistress(message: string, history: { role: string; text: string }[] = []) {

@@ -20,8 +20,10 @@ export function nearestCompanionStops(stops: Stop[], position: Coord): Companion
     return { ...s, distanceM: Math.round(distance(position, [s.lng, s.lat])), direction: `${cardinal} toward ${street}`, openUntil: s.demo === false ? (s.opening_hours || 'unknown') : closingTime(s.closes_at) };
   }).sort((a, b) => a.distanceM - b.distanceM).slice(0, 3);
 }
+// "Someone's following me" is distress; "can my mom follow my walk?" is not.
+export const DISTRESS = /unsafe|scared|afraid|threat|danger|harass|stalk|help me|(?:following|followed|follows)\s+me\b|being followed|\b(?:someone|somebody|guy|man|person|stranger|car|he|they)\b[^.?!]{0,30}\bfollow/i;
 export function needsStop(message: string, history: { role: string; text: string }[] = []) {
-  const distress = /unsafe|follow(?:ing|ed|s)?|scared|afraid|threat|danger|harass/i;
+  const distress = DISTRESS;
   return distress.test(message) || /where|go.*stop|should.*go|need.*(?:place|stop)|coffee/i.test(message) || (/\bthere\b/i.test(message) && history.some((m) => m.role === 'you' && distress.test(m.text)));
 }
 export function stopGuidance(stop: CompanionStop | undefined) {

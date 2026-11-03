@@ -14,6 +14,11 @@ describe('companion safety rules', () => {
     expect(isDistress('where?', [{ role: 'you', text: 'I feel unsafe' }])).toBe(true);
     expect(isDistress('I want a coffee')).toBe(false);
   });
+  it('tells being followed apart from wanting someone to follow the walk', () => {
+    for (const t of ['I think a guy is following me', 'a car keeps following', 'someone follows me every night', 'I’m being followed']) expect(isDistress(t)).toBe(true);
+    for (const t of ['Can my mom follow my walk?', 'my friend is following my walk', 'There’s a fight up ahead, can I avoid it?']) expect(isDistress(t)).toBe(false);
+    expect(isDistress('There’s a fight up ahead', [{ role: 'you', text: 'Can my mom follow my walk?' }])).toBe(false);
+  });
   it('flags replies that call an area or person safe', () => {
     for (const t of ['This block is safe.', "You're safe here.", 'It looks perfectly safe', 'This is a safe neighborhood.']) expect(claimsSafety(t)).toBe(true);
     for (const t of ['Head to The Mill, 120m north.', 'Two reports of poor lighting nearby.', 'Stay on well-lit streets.']) expect(claimsSafety(t)).toBe(false);
