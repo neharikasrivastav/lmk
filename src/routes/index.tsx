@@ -36,6 +36,7 @@ import { optionalShare } from "@/lib/walk-start";
 import { getRouteBusinesses } from "@/lib/stops.functions";
 import { shareLink } from "@/lib/share-link";
 import { nearestCompanionStops, needsStop, stopGuidance } from '@/lib/companion-stops';
+import { applySafetyRules, type CompanionAction } from '@/lib/companion-safety';
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
 import { CONTACTS_STORAGE_KEY, DEMO_CONTACTS, parseStoredContacts, shareMessageUrl, type WalkContact } from '@/lib/walk-contacts';
 import {
@@ -118,7 +119,7 @@ function Home() {
     [stopTarget, setStopTarget] = useState<Stop | null>(null),
     [isDemo, setIsDemo] = useState(true),
     [chatInput, setChatInput] = useState(""),
-    [messages, setMessages] = useState<{ role: 'you' | 'lmk'; text: string; stop?: Stop | null }[]>([]),
+    [messages, setMessages] = useState<{ role: 'you' | 'lmk'; text: string; actions?: CompanionAction[] }[]>([]),
     [chatBusy, setChatBusy] = useState(false),
     [chatError, setChatError] = useState("");
   const startTrip = useServerFn(createTrip),
@@ -399,22 +400,18 @@ function Home() {
     setChatBusy(true);
     setChatError("");
     setMessages((m) => [...m, { role: "you", text }]);
+    const history = messages.map(({ role, text }) => ({ role, text }));
+    const walk = { active: walkStarted, sharing: Boolean(trip), canReroute: rank.routes.some((r) => r.id !== selected) };
     try {
-      const r = await ask({ data: { message: text, position, destination, history: messages.map(({ role, text }) => ({ role, text })) } });
+      const r = await ask({ data: { message: text, position, destination, history, walk } });
       if (r.error) setChatError(r.error);
-      const stop = r.stop ?? (needsStop(text, messages) ? nearestCompanion ?? null : null);
-      const fallback = stopGuidance(nearestCompanion);
-      setMessages((m) => [...m, { role: "lmk", text: `${r.error ? 'Scripted response: ' : ''}${r.text || fallback}`, stop }]);
+      setMessages((m) => [...m, { role: "lmk", text: `${r.error ? 'Scripted response: ' : ''}${r.text}`, actions: r.actions }]);
     } catch {
+      // Offline: the same guardrails still give the nearest stop, an alert and 911.
       setChatError("The companion could not connect.");
-      setMessages((m) => [
-        ...m,
-        {
-          role: "lmk",
-          text: `Scripted response: ${stopGuidance(nearestCompanion)}`,
-          stop: nearestCompanion ?? null,
-        },
-      ]);
+      const stop = needsStop(text, history) ? nearestCompanion : undefined;
+      const scripted = applySafetyRules({ text: '', actions: stop ? [{ type: 'go_to_stop', stop }] : [], message: text, history, nearest: nearestCompanion, walk });
+      setMessages((m) => [...m, { role: "lmk", text: `Scripted response: ${scripted.text}`, actions: scripted.actions }]);
     } finally {
       setChatBusy(false);
     }
@@ -975,10 +972,15 @@ function Home() {
                 {messages.map((m, i) => (
                   <Message key={i} from={m.role === 'you' ? 'user' : 'assistant'}>
                     <MessageContent><MessageResponse>{m.text}</MessageResponse></MessageContent>
-                    {m.stop && <div className="flex flex-wrap gap-2">
-                      <Button size="sm" className="h-auto min-h-10 whitespace-normal" disabled={busy} onClick={() => { if (m.stop) void stopAt(m.stop); }}><Navigation />Go there</Button>
-                      <Button size="sm" variant="secondary" className="h-auto min-h-10 whitespace-normal" onClick={() => sms(true)}><Send />Alert my contacts</Button>
-                      <Button size="sm" variant="outline" className="h-auto min-h-10" asChild><a href="tel:911"><Phone />Call 911</a></Button>
+                    {!!m.actions?.length && <div className="flex flex-wrap gap-2">
+                      {m.actions.map((a) => {
+                        const cls = "h-auto min-h-10 whitespace-normal";
+                        if (a.type === 'go_to_stop') return <Button key={a.type} size="sm" className={cls} disabled={busy} onClick={() => void stopAt(a.stop)}><Navigation />Go to {a.stop.name.split(' · ')[0]}</Button>;
+                        if (a.type === 'reroute') return <Button key={a.type} size="sm" variant="secondary" className={cls} onClick={() => { rerouteDemo(); setPanel("walk"); }}><Navigation />Reroute</Button>;
+                        if (a.type === 'share_walk') return <Button key={a.type} size="sm" variant="secondary" className={cls} disabled={shareBusy} onClick={() => void createShare()}><Send />Share my walk</Button>;
+                        if (a.type === 'alert_contacts') return <Button key={a.type} size="sm" variant="secondary" className={cls} onClick={() => sms(true)}><Send />Alert my contacts</Button>;
+                        return <Button key={a.type} size="sm" variant="outline" className="h-auto min-h-10" asChild><a href="tel:911"><Phone />Call 911</a></Button>;
+                      })}
                     </div>}
                   </Message>
                 ))}
@@ -1046,7 +1048,7 @@ function Home() {
                   <Navigation />
                 </Button>
               )}
-              {!messages.some((m) => m.stop) && <div className="mt-3 flex justify-between gap-2">
+              {!messages.some((m) => m.actions?.length) && <div className="mt-3 flex justify-between gap-2">
                 <Button
                   variant="ghost"
                   onClick={() => sms(true)}

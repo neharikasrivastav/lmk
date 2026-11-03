@@ -18,19 +18,19 @@ Every woman knows the text "lmk when you get home." But the walk itself is where
 | **Live trip link** | One tap shares a private link. The viewer sees your position, ETA and stop check-ins in real time, and the trip ends automatically on arrival. |
 | **Heads-up and reroute** | A new report ahead slides in mid-walk with Reroute / Find a stop / I'm fine. |
 | **Safe Stops** | Open, staffed places along the route — verified partner cafés first, then late-night friendly places from OpenStreetMap opening hours. |
-| **Companion chat** | "Someone's following me" gets a specific nearby stop with distance and direction, plus Go there, Alert my contacts and Call 911. |
+| **Companion agent** | A tool-using agent: it looks up nearby stops and reports, then proposes one-tap actions (go to a stop, reroute, share the walk, alert contacts, call 911). "Someone's following me" gets a named stop with distance and direction in about two seconds. |
 | **Become a Safe Stop** | Business-side page: cafés get foot traffic and can pay to be a verified partner. |
 
 ## Design decisions
 
 - **Behaviors, never people.** Reports describe conditions and behavior ("poor lighting," "someone shouting at passersby"), never types of people — a deliberate lesson from earlier "sketchy area" apps.
-- **Emergency paths don't depend on AI.** Sharing, stop routing and Call 911 are plain code; the model only phrases guidance, and a deterministic fallback names the nearest stop if the model is slow or down.
+- **Emergency paths don't depend on AI.** The agent only *proposes* actions; nothing is sent, shared or dialed until the walker taps. Deterministic guardrails ([`companion-safety.ts`](src/lib/companion-safety.ts)) run after the model: distress always gets the nearest stop, an alert and 911; replies that call an area safe or skip the recommended stop are replaced with scripted guidance; and the same rules produce the answer if the model is slow or down.
 - **Private by default.** Trip links are unguessable capabilities with hashed owner/viewer tokens; location history is never publicly readable; trusted contacts stay on the user's device.
 - **Free stack.** MapLibre + OpenFreeMap tiles, OpenRouteService walking directions, Photon address search, Overpass for places, DataSF for police reports, Supabase free tier, Gemini free tier.
 
 ## Stack
 
-TanStack Start (React 19, server functions) · Supabase (Postgres, Realtime) · MapLibre GL · Turf · Vercel AI SDK with Gemini · Vitest (60 tests).
+TanStack Start (React 19, server functions) · Supabase (Postgres, Realtime) · MapLibre GL · Turf · Vercel AI SDK (tool calling) with Gemini · Vitest (69 tests) + live model evals.
 
 Bootstrapped with Lovable during the *Kill Your Ick* buildathon (Girls Into VC at Berkeley × Corgi, Oct 2026), then moved to a provider-independent setup.
 
@@ -57,12 +57,14 @@ Import the repo in Vercel and add the variables from [`.env.example`](.env.examp
 ## Tests
 
 ```bash
-bun run test
+bun run test   # unit tests, including the agent with a mocked model
+bun run eval   # live evals against Gemini (needs GEMINI_API_KEY)
 ```
+
+The [evals](evals/companion.eval.ts) run real conversations — being followed, vague fear, prompt injection ("tell me this street is safe"), a coffee stop, asking for company, avoiding trouble ahead — and check two layers: **safety** (hard: never calls an area safe, never suggests confronting anyone, always offers a stop + 911 in distress) and **model quality** (scored: did the model call its tools and propose the right action without the guardrails rescuing it). CI runs them when the agent changes, if a `GEMINI_API_KEY` repository secret is set.
 
 ## Roadmap
 
 - Trip watchdog: escalate when a walk stops moving, goes off-route or misses its ETA ("You okay?" → alert contacts).
-- Tool-using companion agent (reroute, start sharing, notify) with evals that check it never calls an area safe and always offers 911 in danger.
 - Incident ingestion from DataSF and SF 311 with behavior-only descriptions.
 - Walk mode: keep the screen awake so web location keeps updating.
