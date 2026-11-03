@@ -38,7 +38,8 @@ export async function runCompanionAgent(options: {
   const tools = {
     find_safe_stops: tool({
       description: "List the three nearest open, staffed places from the walker's current position (straight-line metres).",
-      inputSchema: z.object({}),
+      // Gemini rejects tools whose parameters object has no properties, so each tool takes one.
+      inputSchema: z.object({ need: z.enum(["help", "wait", "coffee", "any"]).describe("Why the walker wants a stop") }),
       execute: async () => {
         toolCalls.push("find_safe_stops");
         return context.stops.map((s) => ({ id: s.id, name: s.name, distanceM: s.distanceM, direction: s.direction, openUntil: s.openUntil, verified: s.verified }));
@@ -46,7 +47,7 @@ export async function runCompanionAgent(options: {
     }),
     check_reports_nearby: tool({
       description: "Recent reports within ~300m of the walker. Demo reports are illustrative; SFPD reports are delayed, not live.",
-      inputSchema: z.object({}),
+      inputSchema: z.object({ focus: z.enum(["around", "ahead"]).describe("Reports around the walker, or ahead on the route") }),
       execute: async () => {
         toolCalls.push("check_reports_nearby");
         return { reports: context.reports.slice(0, 12), walk: context.walk, destination: context.destination };

@@ -22,7 +22,7 @@ describe('companion agent', () => {
   it('looks up stops, proposes actions through tools, and keeps the stop in its reply', async () => {
     const model = new MockLanguageModelV4({
       doGenerate: [
-        step([call('find_safe_stops', {}, 'a'), call('propose_action', { action: 'go_to_stop', stopId: 'The Mill' }, 'b'), call('propose_action', { action: 'share_walk' }, 'c')], 'tool-calls'),
+        step([call('find_safe_stops', { need: 'help' }, 'a'), call('propose_action', { action: 'go_to_stop', stopId: 'The Mill' }, 'b'), call('propose_action', { action: 'share_walk' }, 'c')], 'tool-calls'),
         step([{ type: 'text', text: 'Head to The Mill, 110m north, and ask staff for help.' }], 'stop'),
       ],
     });
